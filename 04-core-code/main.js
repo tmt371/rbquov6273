@@ -6,6 +6,7 @@ import { UIManager } from './ui/ui-manager.js';
 import { InputHandler } from './ui/input-handler.js';
 import { paths } from './config/paths.js';
 import { EVENTS, DOM_IDS } from './config/constants.js';
+import { LeftPanelComponent } from './ui/left-panel-component.js';
 
 class App {
     constructor() {
@@ -57,14 +58,19 @@ class App {
         const configManager = this.appContext.get('configManager');
         const appController = this.appContext.get('appController');
 
-        // [MODIFIED] Pass all necessary component instances to UIManager
+        // [FIX] Instantiate LeftPanelComponent here, after its DOM element is loaded
+        const leftPanelComponent = new LeftPanelComponent({
+            eventAggregator,
+            detailConfigView: this.appContext.get('detailConfigView')
+        });
+
         this.uiManager = new UIManager({
             appElement: document.getElementById(DOM_IDS.APP),
             eventAggregator,
             calculationService,
             rightPanelComponent: this.appContext.get('rightPanelComponent'),
             quotePreviewComponent: this.appContext.get('quotePreviewComponent'),
-            detailConfigView: this.appContext.get('detailConfigView')
+            leftPanelComponent: leftPanelComponent // [FIX] Inject the new instance
         });
 
         await configManager.initialize();

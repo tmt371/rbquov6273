@@ -2,7 +2,6 @@
 
 import { TableComponent } from './table-component.js';
 import { SummaryComponent } from './summary-component.js';
-import { LeftPanelComponent } from './left-panel-component.js';
 import { PanelComponent } from './panel-component.js';
 import { NotificationComponent } from './notification-component.js';
 import { DialogComponent } from './dialog-component.js';
@@ -19,7 +18,7 @@ export class UIManager {
         calculationService,
         rightPanelComponent,
         quotePreviewComponent,
-        detailConfigView
+        leftPanelComponent // [MODIFIED] Receive an already instantiated component
     }) {
         this.appElement = appElement;
         this.eventAggregator = eventAggregator;
@@ -33,11 +32,9 @@ export class UIManager {
         this.summaryComponent = new SummaryComponent(
             document.getElementById(DOM_IDS.TOTAL_SUM_VALUE)
         );
-        this.leftPanelComponent = new LeftPanelComponent({
-            eventAggregator,
-            detailConfigView
-        });
-        this.rightPanelComponent = rightPanelComponent; // Already instantiated
+        // [MODIFIED] Assign the received instance directly
+        this.leftPanelComponent = leftPanelComponent;
+        this.rightPanelComponent = rightPanelComponent;
         this.numericKeyboardPanel = new PanelComponent(
             document.getElementById(DOM_IDS.NUMERIC_KEYBOARD_PANEL)
         );
@@ -49,7 +46,7 @@ export class UIManager {
             document.getElementById(DOM_IDS.CONFIRMATION_DIALOG_OVERLAY),
             eventAggregator
         );
-        this.quotePreviewComponent = quotePreviewComponent; // Already instantiated
+        this.quotePreviewComponent = quotePreviewComponent;
 
         // --- Event Subscriptions ---
         this.eventAggregator.subscribe(EVENTS.USER_TOGGLED_NUMERIC_KEYBOARD, (isVisible) =>
@@ -64,14 +61,7 @@ export class UIManager {
         this.leftPanelComponent.render(state);
         this.rightPanelComponent.render(state);
 
-        // Render panels based on visibility state
         this.numericKeyboardPanel.render(state.ui.isNumericKeyboardVisible);
-
-        // These components manage their own state internally based on events
-        // but could be updated here if needed in the future.
-        // this.notificationComponent.render(state);
-        // this.dialogComponent.render(state);
-        // this.quotePreviewComponent.render(state);
     }
 
     toggleNumericKeyboard(isVisible) {
