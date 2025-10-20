@@ -1,0 +1,80 @@
+/* File: 04-core-code/ui/css/quote-appendix.css */
+
+/* * This file contains styles specifically for the "Quotation Appendix" page,
+ * which includes the detailed item list and motorised accessories summary.
+ */
+
+/* --- Fabric Type Background Colors --- */
+.bg-blockout {
+    background-color: #f2f2f2;
+    /* Light Grey */
+}
+
+.bg-screen {
+    background-color: #e0f7fa;
+    /* Light Blue */
+}
+
+.bg-light-filter {
+    background-color: #fce4ec;
+    /* Light Pink */
+}
+
+/* --- Legend Color Boxes --- */
+.legend .color-box {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+    vertical-align: middle;
+    border: 1px solid #ccc;
+}
+
+/* --- General Table Styling for Appendix --- */
+.detailed-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    /* Add space between tables */
+    border: 2px solid #555555;
+    /* border-dark-grey */
+}
+
+.detailed-list-table th,
+.detailed-list-table td {
+    border: 1px solid #dddddd;
+    /* border-light-grey */
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.detailed-list-table thead th {
+    font-weight: 600;
+}
+
+.detailed-list-table .table-title {
+    background-color: #E6E6E6;
+    /* header-bg-color */
+    color: #333;
+    font-weight: bold;
+    font-size: 16px;
+    border-bottom: 2px solid #dddddd;
+    /* border-light-grey */
+}
+
+.detailed-list-table tfoot {
+    font-weight: bold;
+}
+
+.detailed-list-table tfoot td {
+    border-top: 2px solid #ccc;
+}
+
+.detailed-list-table .total-row {
+    background-color: #E6E6E6;
+    /* header-bg-color */
+    font-weight: bold;
+}
