@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ez Blinds Quotee v0.3 - Spreadsheet Mode</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="app" class="app-container">
         <div class="results-panel">
@@ -14,13 +16,20 @@
             </table>
         </div>
         <div class="keyboard-panel" id="numeric-keyboard-panel">
-            
+
             <div class="top-controls-container">
+
                 <div class="panel-toggle" id="panel-toggle" title="Toggle Keyboard">
-                    <svg class="toggle-arrow arrow-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-                    <svg class="toggle-arrow arrow-up" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>
+                    <svg class="toggle-arrow arrow-down" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                    </svg>
+                    <svg class="toggle-arrow arrow-up" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                    </svg>
                 </div>
-                
+
                 <button id="key-m-set">M-SET</button>
 
                 <div class="top-summary-container" id="top-summary-container">
@@ -28,6 +37,7 @@
                     <span class="value is-current" id="total-sum-value"></span>
                 </div>
             </div>
+
 
             <div class="virtual-keyboard" id="numeric-keyboard">
                 <button id="key-7">7</button>
@@ -48,7 +58,7 @@
                 <button id="key-enter">&#x23CE;</button>
 
                 <button id="key-ins-grid">Ins</button>
-                
+
                 <button id="key-0">0</button>
                 <button id="key-del">&#x2B05;</button>
                 <button id="key-clear">C</button>
@@ -57,7 +67,7 @@
     </div>
 
     <div id="function-panel">
-        </div>
+    </div>
 
     <input type="file" id="file-loader" style="display: none;" accept=".json,.csv">
     <div id="toast-container"></div>
@@ -73,6 +83,16 @@
         </div>
     </div>
 
+    <div id="quote-preview-overlay" class="quote-preview-overlay">
+        <div class="quote-preview-content">
+            <iframe class="quote-preview-iframe" title="Quote Preview"></iframe>
+            <div class="quote-preview-actions">
+                <button class="preview-btn-secondary">Close</button>
+                <button class="preview-btn-primary">Print / Save as PDF</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="./04-core-code/main.js"></script>
 
     <script>
@@ -81,10 +101,11 @@
             var erudaScript = document.createElement('script');
             erudaScript.src = '//cdn.jsdelivr.net/npm/eruda';
             document.body.appendChild(erudaScript);
-            erudaScript.onload = function() {
+            erudaScript.onload = function () {
                 eruda.init();
             }
         }
     </script>
-    </body>
+</body>
+
 </html>

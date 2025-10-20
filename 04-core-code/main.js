@@ -6,6 +6,7 @@ import { UIManager } from './ui/ui-manager.js';
 import { InputHandler } from './ui/input-handler.js';
 import { paths } from './config/paths.js';
 import { EVENTS, DOM_IDS } from './config/constants.js';
+import { QuotePreviewComponent } from './ui/quote-preview-component.js'; // [NEW]
 
 class App {
     constructor() {
@@ -62,12 +63,16 @@ class App {
         const appController = this.appContext.get('appController');
         const rightPanelComponent = this.appContext.get('rightPanelComponent');
 
+        // [MODIFIED] Get the new component instance.
+        const quotePreviewComponent = this.appContext.get('quotePreviewComponent');
+
         // Step 4: Initialize the main UI manager.
         this.uiManager = new UIManager({
             appElement: document.getElementById(DOM_IDS.APP),
             eventAggregator,
             calculationService,
-            rightPanelComponent
+            rightPanelComponent,
+            quotePreviewComponent // Pass the new component
         });
 
         // Step 5: Continue with the rest of the application startup.

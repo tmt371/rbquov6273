@@ -4,6 +4,7 @@ import { initialState } from '../config/initial-state.js';
 import { EVENTS, DOM_IDS } from '../config/constants.js';
 import * as uiActions from '../actions/ui-actions.js';
 import * as quoteActions from '../actions/quote-actions.js';
+import { paths } from '../config/paths.js'; // [NEW] Import paths
 
 /**
  * @fileoverview A dedicated service for coordinating complex, multi-step user workflows.
@@ -17,12 +18,103 @@ export class WorkflowService {
         this.calculationService = calculationService;
         this.productFactory = productFactory;
         this.detailConfigView = detailConfigView;
+        this.quotePreviewComponent = null; // Will be set by AppContext
 
         this.f2InputSequence = [
             'f2-b10-wifi-qty', 'f2-b13-delivery-qty', 'f2-b14-install-qty',
             'f2-b15-removal-qty', 'f2-b17-mul-times', 'f2-b18-discount'
         ];
         console.log("WorkflowService Initialized.");
+    }
+
+    // [NEW] Setter for the QuotePreviewComponent dependency
+    setQuotePreviewComponent(component) {
+        this.quotePreviewComponent = component;
+    }
+
+    async handlePrintableQuoteRequest() {
+        try {
+            // 1. Fetch templates
+            const [quoteTemplate, detailsTemplate] = await Promise.all([
+                fetch(paths.partials.quoteTemplate).then(res => res.text()),
+                fetch(paths.partials.detailedItemList).then(res => res.text()),
+            ]);
+
+            // 2. Get current state and F3 override data
+            const { quoteData, ui } = this.stateService.getState();
+            const f3Data = this._getF3OverrideData();
+
+            // 3. Prepare data for templates
+            const templateData = this._prepareTemplateData(quoteData, ui, f3Data);
+
+            // 4. Populate templates
+            const populatedDetails = this._populateTemplate(detailsTemplate, templateData);
+            const finalHtml = this._populateTemplate(quoteTemplate, { ...templateData, detailedItemList: populatedDetails });
+
+            // 5. Show preview
+            this.eventAggregator.publish(EVENTS.SHOW_QUOTE_PREVIEW, finalHtml);
+
+        } catch (error) {
+            console.error("Error generating printable quote:", error);
+            this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, {
+                message: "Failed to generate quote preview. See console for details.",
+                type: 'error',
+            });
+        }
+    }
+
+    _getF3OverrideData() {
+        const getValue = (id) => document.getElementById(id)?.value || '';
+        return {
+            quoteId: getValue('f3-quote-id'),
+            issueDate: getValue('f3-issue-date'),
+            dueDate: getValue('f3-due-date'),
+            customerName: getValue('f3-customer-name'),
+            customerAddress: getValue('f3-customer-address'),
+            customerPhone: getValue('f3-customer-phone'),
+            customerEmail: getValue('f3-customer-email'),
+            finalOfferPrice: getValue('f3-final-offer-price'),
+            generalNotes: getValue('f3-general-notes'),
+            termsConditions: getValue('f3-terms-conditions'),
+        };
+    }
+
+    _prepareTemplateData(quoteData, ui, f3Data) {
+        // This will be expanded significantly to gather all necessary data points
+        // For now, it's a placeholder for the main data structure.
+        const summaryData = this.calculationService.calculateF2Summary(quoteData, ui);
+
+        return {
+            quoteId: f3Data.quoteId,
+            issueDate: f3Data.issueDate,
+            dueDate: f3Data.dueDate,
+            customerInfoHtml: this._formatCustomerInfo(f3Data),
+            itemsTableBody: '<tr><td colspan="5">Item details will be populated here.</td></tr>', // Placeholder
+            rollerBlindsTable: '<table><tr><td>Detailed roller blind list will be here.</td></tr></table>', // Placeholder
+            subtotal: `$${summaryData.sumPrice.toFixed(2)}`, // Example
+            deliveryFee: `$${summaryData.deliveryFee.toFixed(2)}`,
+            installationFee: `$${summaryData.installFee.toFixed(2)}`,
+            gst: `$${(summaryData.sumPrice * 0.1).toFixed(2)}`,
+            grandTotal: `$${(summaryData.sumPrice * 1.1).toFixed(2)}`,
+            deposit: `$${(summaryData.sumPrice * 1.1 * 0.5).toFixed(2)}`,
+            balance: `$${(summaryData.sumPrice * 1.1 * 0.5).toFixed(2)}`,
+            savings: `$${(summaryData.firstRbPrice - summaryData.disRbPrice).toFixed(2)}`,
+            termsAndConditions: f3Data.termsConditions.replace(/\n/g, '<br>')
+        };
+    }
+
+    _formatCustomerInfo(f3Data) {
+        let html = `<strong>${f3Data.customerName || ''}</strong><br>`;
+        if (f3Data.customerAddress) html += `${f3Data.customerAddress.replace(/\n/g, '<br>')}<br>`;
+        if (f3Data.customerPhone) html += `Phone: ${f3Data.customerPhone}<br>`;
+        if (f3Data.customerEmail) html += `Email: ${f3Data.customerEmail}`;
+        return html;
+    }
+
+    _populateTemplate(template, data) {
+        return template.replace(/\{\{\{?(\w+)}}}?/g, (match, key) => {
+            return data.hasOwnProperty(key) ? data[key] : match;
+        });
     }
 
     handleRemoteDistribution() {

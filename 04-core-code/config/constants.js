@@ -19,6 +19,10 @@ export const EVENTS = {
     SHOW_CONFIRMATION_DIALOG: 'showConfirmationDialog',
     FOCUS_ELEMENT: 'focusElement',
 
+    // --- [NEW] Quote Preview Workflow ---
+    USER_REQUESTED_PRINTABLE_QUOTE: 'userRequestedPrintableQuote',
+    SHOW_QUOTE_PREVIEW: 'showQuotePreview',
+
     // --- User Actions: Quick Quote View ---
     NUMERIC_KEY_PRESSED: 'numericKeyPressed',
     USER_REQUESTED_INSERT_ROW: 'userRequestedInsertRow',
@@ -88,6 +92,7 @@ export const DOM_IDS = {
     TOAST_CONTAINER: 'toast-container',
     CONFIRMATION_DIALOG_OVERLAY: 'confirmation-dialog-overlay',
     FILE_LOADER: 'file-loader',
+    QUOTE_PREVIEW_OVERLAY: 'quote-preview-overlay', // [NEW]
 
     // --- Numeric Keyboard & Top Controls ---
     NUMERIC_KEYBOARD: 'numeric-keyboard',
@@ -128,6 +133,9 @@ export const DOM_IDS = {
     F1_SUB_TOTAL: 'f1-sub-total',
     F1_GST: 'f1-gst',
     F1_FINAL_TOTAL: 'f1-final-total',
+
+    // --- F3 Panel Elements ---
+    BTN_ADD_QUOTE: 'btn-add-quote', // [NEW]
 
     // --- Dialog-specific Elements ---
     DIALOG_INPUT_1CH: 'dialog-input-1ch',

@@ -1,11 +1,14 @@
 // File: 04-core-code/ui/views/f3-quote-prep-view.js
 
+import { EVENTS, DOM_IDS } from '../../config/constants.js';
+
 /**
  * @fileoverview A dedicated sub-view for handling all logic related to the F3 (Quote Prep) tab.
  */
 export class F3QuotePrepView {
-    constructor({ panelElement }) {
+    constructor({ panelElement, eventAggregator }) {
         this.panelElement = panelElement;
+        this.eventAggregator = eventAggregator;
 
         this._cacheF3Elements();
         this._initializeF3Listeners();
@@ -28,7 +31,7 @@ export class F3QuotePrepView {
                 termsConditions: query('#f3-terms-conditions'),
             },
             buttons: {
-                addQuote: query('#btn-add-quote'),
+                addQuote: query(`#${DOM_IDS.BTN_ADD_QUOTE}`),
             }
         };
     }
@@ -54,6 +57,13 @@ export class F3QuotePrepView {
                 this.f3.inputs.dueDate.value = `${year}-${month}-${day}`;
             }
         });
+
+        // --- Add Quote Button Listener ---
+        if (this.f3.buttons.addQuote) {
+            this.f3.buttons.addQuote.addEventListener('click', () => {
+                this.eventAggregator.publish(EVENTS.USER_REQUESTED_PRINTABLE_QUOTE);
+            });
+        }
 
         // --- Focus Jumping Logic ---
         const focusOrder = [

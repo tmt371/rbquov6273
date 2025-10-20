@@ -2,16 +2,16 @@
 
 /**
  * @description
- * AppContext 是一個簡易的依賴注入（DI）容器，用於管理應用程式中各個模組的實例化和依賴關係。
+ * AppContext 是一個簡易的依賴注入（DI）容器，用於管理應用程式中各模組的實例化與依賴關係。
  * 它的主要職責是：
- * 1. 集中創建和配置服務（Services）、管理器（Managers）、工廠（Factories）和視圖（Views）。
- * 2. 解決模組之間的依賴，確保每個模組都能獲得它所需要的其他模組的實例。
- * 3. 簡化 `main.js`，使其只專注於應用程式的啟動流程，而不是物件的創建細節。
+ * 1. 集中創建與配置服務（Services）、管理器（Managers）、工廠（Factories）與視圖（Views）。
+ * 2. 處理模組之間的依賴，確保每個模組都能獲得它所需要的其他模組的實例。
+ * 3. 簡化 `main.js`，使其只專注於應用的啟動流程，而非物件的創建細節。
  *
  * 這個模式的好處是：
- * - **集中管理**: 所有物件的創建邏輯都集中在此，方便維護和修改。
- * - **降低耦合**: 模組之間不再直接創建依賴，而是通過 AppContext 來獲取，降低了耦合度。
- * - **提高可測試性**: 在測試時，可以輕鬆地替換掉真實的依賴，注入模擬（mock）的物件。
+ * - **集中管理**: 所有物件的創建邏輯都集中在此，方便維護與修改。
+ * - **降低耦合**: 模組之間不直接創建依賴，而是透過 AppContext 來獲取，降低了耦合度。
+ * - **便於測試**: 在測試時，可以輕易地替換真實的依賴，注入模擬（mock）的物件。
  */
 export class AppContext {
     constructor() {
@@ -29,7 +29,7 @@ export class AppContext {
 
     /**
      * 獲取一個實例。
-     * @param {string} name - 想要獲取的實例的名稱。
+     * @param {string} name - 欲獲取的實例的名稱。
      * @returns {object} - 返回對應的實例。
      */
     get(name) {
@@ -95,7 +95,7 @@ export class AppContext {
         const rightPanelElement = document.getElementById('function-panel');
         const f1View = new F1CostView({ panelElement: rightPanelElement, eventAggregator, calculationService });
         const f2View = new F2SummaryView({ panelElement: rightPanelElement, eventAggregator });
-        const f3View = new F3QuotePrepView({ panelElement: rightPanelElement });
+        const f3View = new F3QuotePrepView({ panelElement: rightPanelElement, eventAggregator });
         const f4View = new F4ActionsView({ panelElement: rightPanelElement, eventAggregator });
 
         // --- Instantiate Main RightPanelComponent Manager ---
@@ -108,6 +108,13 @@ export class AppContext {
             f4View
         });
         this.register('rightPanelComponent', rightPanelComponent);
+
+        // --- [NEW] Instantiate Quote Preview Component ---
+        const quotePreviewComponent = new QuotePreviewComponent({
+            containerElement: document.getElementById(DOM_IDS.QUOTE_PREVIEW_OVERLAY),
+            eventAggregator,
+        });
+        this.register('quotePreviewComponent', quotePreviewComponent);
 
         // --- Instantiate Main Left Panel Views ---
         const k1LocationView = new K1LocationView({ stateService });
@@ -136,6 +143,7 @@ export class AppContext {
             productFactory,
             detailConfigView
         });
+        workflowService.setQuotePreviewComponent(quotePreviewComponent); // [NEW] Inject dependency
         this.register('workflowService', workflowService);
 
         const quickQuoteView = new QuickQuoteView({
@@ -183,3 +191,5 @@ import { F1CostView } from './ui/views/f1-cost-view.js';
 import { F2SummaryView } from './ui/views/f2-summary-view.js';
 import { F3QuotePrepView } from './ui/views/f3-quote-prep-view.js';
 import { F4ActionsView } from './ui/views/f4-actions-view.js';
+import { QuotePreviewComponent } from './ui/quote-preview-component.js'; // [NEW]
+import { DOM_IDS } from './config/constants.js'; // [NEW]
