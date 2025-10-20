@@ -34,16 +34,24 @@ export class WorkflowService {
     async handlePrintableQuoteRequest() {
         try {
             const [quoteTemplate, appendixTemplate, ...styles] = await this._loadPreviewAssets();
+
             const { quoteData, ui } = this.stateService.getState();
             const f3Data = this._getF3OverrideData();
             const summaryData = this.calculationService.calculateF2Summary(quoteData, ui);
+
+            // Prepare all data chunks
             const templateData = this._prepareTemplateData(quoteData, ui, f3Data, summaryData);
 
+            // First, populate the appendix template with its specific content
             const appendixHtml = this._populateTemplate(appendixTemplate, templateData);
+
+            // Then, add the fully populated appendix HTML to the main template's data
             templateData.appendixHtml = appendixHtml;
 
+            // Now, populate the main quote template
             let finalHtml = this._populateTemplate(quoteTemplate, templateData);
 
+            // Inject styles and finalize
             const styleString = `<style>${styles.join('\n')}</style>`;
             finalHtml = finalHtml.replace('', styleString);
 
@@ -63,6 +71,7 @@ export class WorkflowService {
             return res.text();
         });
 
+        // Load all required CSS files for injection
         return Promise.all([
             fetchText(paths.partials.quoteTemplate),
             fetchText(paths.partials.detailedItemList),
@@ -92,6 +101,9 @@ export class WorkflowService {
     }
 
     _prepareTemplateData(quoteData, ui, f3Data, summaryData) {
+        const rollerBlindsHtml = this._createDetailedItemsTable(quoteData, summaryData);
+        const motorisedAccessoriesHtml = this._createMotorisedAccessoriesTable(ui);
+
         return {
             quoteId: f3Data.quoteId,
             issueDate: this._formatDate(f3Data.issueDate),
@@ -100,8 +112,8 @@ export class WorkflowService {
             summaryItemsTableBody: this._createSummaryItemsTable(quoteData, ui, summaryData),
             summaryTotalsTable: this._createSummaryTotalsTable(summaryData),
             termsAndConditions: f3Data.termsConditions.replace(/\n/g, '<br>'),
-            rollerBlindsTable: this._createDetailedItemsTable(quoteData, summaryData),
-            motorisedAccessoriesTable: this._createMotorisedAccessoriesTable(ui),
+            // [FIX] Combine both tables into a single placeholder for the appendix template
+            rollerBlindsTable: rollerBlindsHtml + motorisedAccessoriesHtml,
         };
     }
 
@@ -238,23 +250,25 @@ export class WorkflowService {
         }).join('');
 
         return `
-            <table class="detailed-list-table">
-                <thead>
-                    <tr><th colspan="8" class="text-center table-title">Roller Blinds</th></tr>
-                    <tr>
-                        <th class="text-center">NO</th><th>Name</th><th>Color</th><th>Location</th>
-                        <th class="text-center">HD</th><th class="text-center">Dual</th>
-                        <th class="text-center">Motor</th><th class="text-right">Price</th>
-                    </tr>
-                </thead>
-                <tbody>${rowsHtml}</tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="7" class="text-right"><strong>Sub total</strong></td>
-                        <td class="text-right">$${toFixed(subtotal)}</td>
-                    </tr>
-                </tfoot>
-            </table>`;
+            <div class="table-scroll-wrapper">
+                <table class="detailed-list-table">
+                    <thead>
+                        <tr><th colspan="8" class="text-center table-title">Roller Blinds</th></tr>
+                        <tr>
+                            <th class="text-center">NO</th><th>Name</th><th>Color</th><th>Location</th>
+                            <th class="text-center">HD</th><th class="text-center">Dual</th>
+                            <th class="text-center">Motor</th><th class="text-right">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="7" class="text-right"><strong>Sub total</strong></td>
+                            <td class="text-right">$${toFixed(subtotal)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>`;
     }
 
     _createMotorisedAccessoriesTable(ui) {
@@ -264,11 +278,11 @@ export class WorkflowService {
 
         let total = 0;
         const rows = [
-            { label: 'Motor', qty: f1.motor_qty, price: f1.motor_price },
-            { label: 'Remote', detail: '1 CH', qty: f1.remote_1ch_qty, price: f1.remote_1ch_price },
-            { label: 'Remote', detail: '16 CH', qty: f1.remote_16ch_qty, price: f1.remote_16ch_price },
-            { label: 'Charger', qty: f1.charger_qty, price: f1.charger_price },
-            { label: '3M Cord', qty: f1.cord_3m_qty, price: f1.cord_3m_price }
+            { label: 'Motor', detail: `(${f1.motor_qty})`, qty: f1.motor_qty, price: f1.motor_price },
+            { label: 'Remote', detail: `1 CH (${f1.remote_1ch_qty})`, qty: f1.remote_1ch_qty, price: f1.remote_1ch_price },
+            { label: 'Remote', detail: `16 CH (${f1.remote_16ch_qty})`, qty: f1.remote_16ch_qty, price: f1.remote_16ch_price },
+            { label: 'Charger', detail: `(${f1.charger_qty})`, qty: f1.charger_qty, price: f1.charger_price },
+            { label: '3M Cord', detail: `(${f1.cord_3m_qty})`, qty: f1.cord_3m_qty, price: f1.cord_3m_price }
         ].filter(item => item.qty > 0);
 
         if (rows.length === 0) return '';
@@ -279,32 +293,36 @@ export class WorkflowService {
             return `
                 <tr>
                     <td>${item.label}</td>
-                    <td class="text-center">${item.detail ? `${item.detail} (${item.qty})` : item.qty}</td>
+                    <td class="text-center">${item.detail}</td>
                     <td class="text-right">$${toFixed(itemTotal)}</td>
                 </tr>`;
         }).join('');
 
         return `
-            <table class="detailed-list-table">
-                <thead>
-                    <tr><th colspan="3" class="text-center table-title">Motorised Accessories</th></tr>
-                    <tr><th>Item</th><th class="text-center">Details / QTY</th><th class="text-right">Total Price</th></tr>
-                </thead>
-                <tbody>${rowsHtml}</tbody>
-                <tfoot>
-                    <tr class="total-row">
-                        <td colspan="2" class="text-right"><strong>Total</strong></td>
-                        <td class="text-right">$${toFixed(total)}</td>
-                    </tr>
-                </tfoot>
-            </table>`;
+            <div class="table-scroll-wrapper">
+                <table class="detailed-list-table">
+                    <thead>
+                        <tr><th colspan="3" class="text-center table-title">Motorised Accessories</th></tr>
+                        <tr><th>Item</th><th class="text-center">Details / QTY</th><th class="text-right">Total Price</th></tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2" class="text-right"><strong>Total</strong></td>
+                            <td class="text-right">$${toFixed(total)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>`;
     }
 
     _populateTemplate(template, data) {
         return template.replace(/\{\{\{?(\w+)}}}?/g, (match, key) => {
-            return data.hasOwnProperty(key) ? data[key] : match;
+            // Use hasOwnProperty to prevent accidentally accessing inherited properties
+            return Object.prototype.hasOwnProperty.call(data, key) ? data[key] : match;
         });
     }
+
 
     handleRemoteDistribution() {
         // ... (existing code remains unchanged)

@@ -73,11 +73,23 @@ export class QuotePreviewComponent {
      */
     print() {
         if (this.iframe && this.iframe.contentWindow) {
-            this.iframe.contentWindow.print();
+            // [FIX] Add a small delay to ensure the iframe content is fully rendered
+            // before the print dialog is triggered. This helps prevent blank prints.
+            setTimeout(() => {
+                try {
+                    this.iframe.contentWindow.print();
+                } catch (error) {
+                    console.error("Printing from iframe failed:", error);
+                    this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, {
+                        message: "Error: Could not trigger print.",
+                        type: 'error'
+                    });
+                }
+            }, 250); // 250ms delay
         } else {
             console.error("Could not access iframe content to print.");
             this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, {
-                message: "Error: Could not trigger print.",
+                message: "Error: Could not access preview content for printing.",
                 type: 'error'
             });
         }

@@ -6,7 +6,6 @@ import { UIManager } from './ui/ui-manager.js';
 import { InputHandler } from './ui/input-handler.js';
 import { paths } from './config/paths.js';
 import { EVENTS, DOM_IDS } from './config/constants.js';
-import { QuotePreviewComponent } from './ui/quote-preview-component.js'; // [NEW]
 
 class App {
     constructor() {
@@ -15,7 +14,6 @@ class App {
 
         const restoredData = migrationService.loadAndMigrateData();
 
-        // [MODIFIED] Initialize only non-UI services first.
         this.appContext.initialize(restoredData);
     }
 
@@ -50,32 +48,25 @@ class App {
     async run() {
         console.log("Application starting...");
 
-        // Step 1: Load all HTML templates into the DOM.
         await this._loadPartials();
 
-        // Step 2: [NEW] Initialize all UI components now that their DOM elements exist.
         this.appContext.initializeUIComponents();
 
-        // Step 3: Get all fully initialized instances from the context.
         const eventAggregator = this.appContext.get('eventAggregator');
         const calculationService = this.appContext.get('calculationService');
         const configManager = this.appContext.get('configManager');
         const appController = this.appContext.get('appController');
-        const rightPanelComponent = this.appContext.get('rightPanelComponent');
 
-        // [MODIFIED] Get the new component instance.
-        const quotePreviewComponent = this.appContext.get('quotePreviewComponent');
-
-        // Step 4: Initialize the main UI manager.
+        // [MODIFIED] Pass all necessary component instances to UIManager
         this.uiManager = new UIManager({
             appElement: document.getElementById(DOM_IDS.APP),
             eventAggregator,
             calculationService,
-            rightPanelComponent,
-            quotePreviewComponent // Pass the new component
+            rightPanelComponent: this.appContext.get('rightPanelComponent'),
+            quotePreviewComponent: this.appContext.get('quotePreviewComponent'),
+            detailConfigView: this.appContext.get('detailConfigView')
         });
 
-        // Step 5: Continue with the rest of the application startup.
         await configManager.initialize();
 
         eventAggregator.subscribe(EVENTS.STATE_CHANGED, (state) => {
